@@ -1,0 +1,71 @@
+from typing import Optional
+
+from .filters.lobby_filter import LobbyFilter
+from .game_lobby import ManagedGameLobby, GameLobby
+from _project import settings, logger
+from models.game_lobby import PartialGameLobbyUpdate
+
+
+class LobbyManager:
+    def __init__(self) -> None:
+        self._id_index: int = 0
+        self.managed_lobbies: dict[int, ManagedGameLobby] = {}
+
+    @property
+    def id_index(self) -> int:
+        return self._id_index
+
+    @id_index.setter
+    def id_index(self, new_value: int) -> None:
+        if new_value > settings.lobby_manager.max_index:
+            message: str = "Tried to set the lobby id index to a higher number than allowed."
+            logger.log_error(message)
+            raise Exception(message)
+        self._id_index = new_value
+
+    def get_lobby(self, lobby_id: int) -> ManagedGameLobby:
+        lobby = self.managed_lobbies.get(lobby_id)
+        if not lobby:
+            message: str = "Tried to fetch a lobby with non existing ID."
+            logger.log_error(message)
+            raise Exception(message)
+        return lobby
+
+    def get_lobbies(self, lobby_filter: Optional[LobbyFilter] = None) -> list[ManagedGameLobby]:
+        returned_lobbies = []
+        if lobby_filter:
+            for lobby in self.managed_lobbies.values():
+                if lobby_filter.check(lobby):
+                    returned_lobbies.append(lobby)
+        else:
+            return self.managed_lobbies.values()
+        return returned_lobbies
+
+    def add_lobby(self, lobby: GameLobby) -> ManagedGameLobby:
+        if len(self.managed_lobbies) >= settings.lobby_manager.max_lobbies:
+            message: str = "Tried to add a Lobby but configured maximum is already reached."
+            logger.log_error(message)
+            raise Exception(message)
+        if lobby in self.managed_lobbies.values():
+            message: str = "Tried to add a Lobby that is already managed by this manager."
+            logger.log_error(message)
+            raise Exception(message)
+        self.id_index += 1
+        lobby_id = self.id_index
+        self.managed_lobbies[lobby_id] = ManagedGameLobby(lobby, lobby_id)
+        logger.log_info(f"Added lobby {lobby.name} to the monitored lobbies pool.")
+        return self.managed_lobbies[lobby_id]
+
+    def update_lobby(self, lobby_id: int, update: PartialGameLobbyUpdate) -> None:
+        lobby = self.get_lobby(lobby_id)
+
+    def remove_lobby(self, lobby_id: int) -> None:
+        lobby: ManagedGameLobby = self.managed_lobbies.pop(lobby_id, None)
+        logger.log_info(f"Removed lobby {lobby.name} from the monitored lobbies pool.")
+
+    def clear(self) -> None:
+        logger.log_info("Clearing lobby manager...")
+        for lobby_id in self.managed_lobbies.keys():
+            self.remove_lobby(lobby_id)
+        self.id_index = 0
+        logger.log_info("Lobby manager successfully cleared.")
