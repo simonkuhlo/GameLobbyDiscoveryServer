@@ -1,4 +1,4 @@
 /.idea
 *.pyc
-*/__pycache__
-/_config
+*/__pycache__/
+/_config/
