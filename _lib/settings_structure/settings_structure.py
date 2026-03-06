@@ -36,10 +36,13 @@ class Settings(BaseModel):
 def save_settings(path: str | Path, settings: Settings) -> None:
     path = Path(path)
     data = settings.model_dump()
+    path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 def load_settings(path: str | Path) -> Settings:
     path = Path(path)
+    if not path.exists():
+        save_settings(path, Settings())
     data = json.loads(path.read_text(encoding="utf-8"))
     return Settings(**data)
