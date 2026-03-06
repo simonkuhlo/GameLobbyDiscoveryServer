@@ -1,13 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from typing import List
-
 from lobby_manager.game_lobby import ManagedGameLobby
 from lobby_manager.lobby_manager import LobbyManager
-from models.game_lobby import (
-    Authorization, GameLobbyCreate, GameLobbyRead, GameLobbyDelete, PartialGameLobbyUpdate
-)
+from models.game_lobby import GameLobbyCreate, GameLobbyRead, GameLobbyDelete, PartialGameLobbyUpdate
 from model_translation_layer.game_lobby import instance_from_create_model, read_model_from_managed_instance, update_game_lobby_with_model
-from auth import check_key
 
 lobby_manager = LobbyManager()
 
