@@ -56,9 +56,6 @@ class LobbyManager:
         logger.log_info(f"Added lobby {lobby.name} to the monitored lobbies pool.")
         return self.managed_lobbies[lobby_id]
 
-    def update_lobby(self, lobby_id: int, update: PartialGameLobbyUpdate) -> None:
-        lobby = self.get_lobby(lobby_id)
-
     def remove_lobby(self, lobby_id: int) -> None:
         lobby: ManagedGameLobby = self.managed_lobbies.pop(lobby_id, None)
         logger.log_info(f"Removed lobby {lobby.name} from the monitored lobbies pool.")
