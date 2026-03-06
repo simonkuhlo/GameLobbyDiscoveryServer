@@ -25,13 +25,16 @@ class SystemSettings(BaseModel):
 class LobbyManagerSettings(BaseModel):
     max_index: int = Field(default=10000)
     max_lobbies: int = Field(default=1000)
-    health_check_frequency_seconds: int = Field(default=10)
+
+class HealthCheckSettings(BaseModel):
+    enabled: bool = Field(default=True)
+    frequency_seconds: int = Field(default=10)
 
 class Settings(BaseModel):
     system: SystemSettings = SystemSettings()
     logging: LoggingSettings = LoggingSettings()
     lobby_manager: LobbyManagerSettings = LobbyManagerSettings()
-
+    health_check: HealthCheckSettings = HealthCheckSettings()
 
 def save_settings(path: str | Path, settings: Settings) -> None:
     path = Path(path)
