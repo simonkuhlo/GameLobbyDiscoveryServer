@@ -4,8 +4,12 @@ from lobby_manager.game_lobby import ManagedGameLobby
 from lobby_manager.lobby_manager import LobbyManager
 from models.game_lobby import GameLobbyCreate, GameLobbyRead, GameLobbyDelete, PartialGameLobbyUpdate
 from model_translation_layer.game_lobby import instance_from_create_model, read_model_from_managed_instance, update_game_lobby_with_model
+from health_monitor import HealthMonitor
+from _project import settings
 
 lobby_manager = LobbyManager()
+if settings.health_check.enabled:
+    health_monitor = HealthMonitor(lobby_manager)
 
 
 async def get_lobby(lobby_id: int) -> ManagedGameLobby:
