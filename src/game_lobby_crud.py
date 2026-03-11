@@ -8,6 +8,12 @@ from health_monitor import HealthMonitor
 from _project import settings
 
 lobby_manager = LobbyManager()
+if settings.health_check:
+    health_monitor = HealthMonitor(lobby_manager=lobby_manager,
+                                   interval=settings.health_check.frequency_seconds,
+                                   timeout=settings.health_check.response_wait_time_seconds
+                                   )
+
 if settings.health_check.enabled:
     health_monitor = HealthMonitor(lobby_manager)
 

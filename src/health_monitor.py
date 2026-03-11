@@ -17,6 +17,8 @@ class HealthMonitor:
         self.interval: float = interval
         self.health_check_timeout: float = timeout
         self.task_timeout: float = self.health_check_timeout + 1.0
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.run())
 
     async def on_lobby_failed_health_check(self, lobby: ManagedGameLobby) -> None:
         logger.log_info(f"Removing broken lobby from lobby manager:  [{lobby.lobby_id}]{lobby.name}")

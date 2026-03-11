@@ -28,7 +28,8 @@ class LobbyManagerSettings(BaseModel):
 
 class HealthCheckSettings(BaseModel):
     enabled: bool = Field(default=True)
-    frequency_seconds: int = Field(default=10)
+    frequency_seconds: float = Field(default=60.0)
+    response_wait_time_seconds: float = Field(default=3.0)
 
 class Settings(BaseModel):
     system: SystemSettings = SystemSettings()
