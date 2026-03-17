@@ -2,16 +2,16 @@ from fastapi import APIRouter, HTTPException, status
 from typing import List
 from lobby_manager.game_lobby import ManagedGameLobby
 from lobby_manager.lobby_manager import LobbyManager
-from models.game_lobby import GameLobbyCreate, GameLobbyRead, GameLobbyDelete, PartialGameLobbyUpdate
+from models.game_lobby import GameLobbyCreate, GameLobbyRead, GameLobbyDelete, PartialGameLobbyUpdate, RegisterResponse, AuthorizedAction
 from model_translation_layer.game_lobby import instance_from_create_model, read_model_from_managed_instance, update_game_lobby_with_model
 from health_monitor import HealthMonitor
 from _project import settings
 
 lobby_manager = LobbyManager()
-if settings.health_check:
+if settings.health_check.enabled:
     health_monitor = HealthMonitor(lobby_manager=lobby_manager,
                                    interval=settings.health_check.frequency_seconds,
-                                   timeout=settings.health_check.response_wait_time_seconds
+                                   max_heartbeat_interval=settings.lobby_manager.heartbeat_frequency + settings.health_check.heartbeat_grace_period
                                    )
 
 if settings.health_check.enabled:
@@ -37,12 +37,24 @@ async def verify_authorization(lobby: ManagedGameLobby, secret_key:str):
 router = APIRouter(prefix="/lobbies", tags=["lobbies"])
 
 
-@router.post("/", response_model=GameLobbyRead)
-async def create_lobby(lobby: GameLobbyCreate) -> GameLobbyRead:
+@router.post("/", response_model=RegisterResponse)
+async def create_lobby(lobby: GameLobbyCreate) -> RegisterResponse:
     """Create a new game lobby."""
     lobby_instance = instance_from_create_model(lobby)
     managed_instance = lobby_manager.add_lobby(lobby_instance)
-    return read_model_from_managed_instance(managed_instance)
+    read_model: GameLobbyRead = read_model_from_managed_instance(managed_instance)
+    response: RegisterResponse = RegisterResponse(
+        lobby_object = read_model,
+        heartbeat_freq = settings.lobby_manager.heartbeat_frequency
+    )
+    return response
+
+@router.post("/heartbeat")
+async def heartbeat(action: AuthorizedAction):
+    lobby = await get_lobby(action.lobby_id)
+    await verify_authorization(lobby, action.secret_key)
+    lobby.heartbeat()
+    return {"message" : "OK"}
 
 @router.get("/", response_model=List[GameLobbyRead])
 async def list_lobbies():

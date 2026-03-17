@@ -24,7 +24,7 @@ class GameLobbyCreate(GameLobbyBaseModel, Authorization):
     pass
 
 class GameLobbyRead(LobbyAction, GameLobbyBaseModel):
-    pass
+    last_heartbeat: float = Field(default=None)
 
 class GameLobbyDelete(AuthorizedAction):
     pass
@@ -39,3 +39,7 @@ class PartialGameLobbyUpdate(AuthorizedAction, GameLobbyBaseModel):
     max_players: Optional[int] = Field(default=None)
     current_players: Optional[int] = Field(default=None)
     game_state: Optional[LobbyGameState] = Field(default=None)
+
+class RegisterResponse(BaseModel):
+    lobby_object: GameLobbyRead
+    heartbeat_freq: float = Field(default=None)

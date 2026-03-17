@@ -22,7 +22,8 @@ def read_model_from_managed_instance(lobby: ManagedGameLobby) -> GameLobbyRead:
         current_players=lobby.current_players,
         game_state=lobby.game_state,
         name=lobby.name,
-        desc=lobby.desc
+        desc=lobby.desc,
+        last_heartbeat=lobby.last_heartbeat
     )
 
 def update_game_lobby_with_model(lobby: ManagedGameLobby, update: PartialGameLobbyUpdate) -> None:

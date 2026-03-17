@@ -25,11 +25,12 @@ class SystemSettings(BaseModel):
 class LobbyManagerSettings(BaseModel):
     max_index: int = Field(default=10000)
     max_lobbies: int = Field(default=1000)
+    heartbeat_frequency: float = Field(default=15000)
 
 class HealthCheckSettings(BaseModel):
     enabled: bool = Field(default=True)
-    frequency_seconds: float = Field(default=60.0)
-    response_wait_time_seconds: float = Field(default=3.0)
+    frequency_seconds: float = Field(default=15.0)
+    heartbeat_grace_period: float = Field(default=60.0)
 
 class Settings(BaseModel):
     system: SystemSettings = SystemSettings()

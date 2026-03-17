@@ -1,4 +1,4 @@
-from models.game_lobby import GameLobbyCreate, GameLobbyRead, PartialGameLobbyUpdate
+from time import time
 from _lib.lobby_game_state import LobbyGameState
 
 class GameLobby:
@@ -20,6 +20,10 @@ class GameLobby:
         self.game_state: LobbyGameState = game_state
         self.name: str = name
         self.desc: str = desc
+        self.last_heartbeat: float = time()
+
+    def heartbeat(self) -> None:
+        self.last_heartbeat = time()
 
 class ManagedGameLobby(GameLobby):
     def __init__(self,
