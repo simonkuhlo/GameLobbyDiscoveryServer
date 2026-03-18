@@ -1,23 +1,16 @@
 import time
 from datetime import datetime
 import asyncio
-from _project import logger
+from _project import logger, settings
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from lobby_manager.game_lobby import ManagedGameLobby
     from lobby_manager.lobby_manager import LobbyManager
 
 class HealthMonitor:
-    def __init__(self,
-                 parent_lobby_manager: "LobbyManager",
-                 heartbeat_frequency_sec: float,
-                 grace_period_sec: float,
-                 interval: Optional[float] = None
-                 ) -> None:
+    def __init__(self, parent_lobby_manager: "LobbyManager") -> None:
         self.parent_lobby_manager: "LobbyManager" = parent_lobby_manager
-        self.interval: Optional[float] = interval
-        self.max_heartbeat_interval_msec: float = heartbeat_frequency_sec + grace_period_sec
-        if self.interval:
+        if settings.health_check.periodic_check:
             loop = asyncio.get_event_loop()
             loop.create_task(self.run())
 
@@ -27,7 +20,7 @@ class HealthMonitor:
 
     async def check_lobby_health(self, lobby: "ManagedGameLobby") -> bool:
         logger.log_debug(f"Starting health check for a specific lobby: [{lobby.lobby_id}]{lobby.name}")
-        deadline: float = lobby.last_heartbeat + self.max_heartbeat_interval_msec
+        deadline: float = lobby.last_heartbeat + settings.health_check.heartbeat_frequency_sec + settings.health_check.heartbeat_grace_period_sec
         logger.log_debug(f"[{lobby.lobby_id}]{lobby.name}: "
                          f"Last heartbeat: {datetime.fromtimestamp(lobby.last_heartbeat)}\n"
                          f"Deadline: {datetime.fromtimestamp(deadline)}\n"
@@ -45,5 +38,5 @@ class HealthMonitor:
 
     async def run(self) -> None:
         while True:
-            await asyncio.sleep(self.interval)
+            await asyncio.sleep(settings.health_check.periodic_check_frequency_sec)
             await self.check_all_lobbies()

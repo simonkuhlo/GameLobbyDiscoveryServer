@@ -1,7 +1,6 @@
-from operator import truediv
 from typing import Optional
 
-from health_monitor import HealthMonitor
+from lobby_manager.health_monitor import HealthMonitor
 from .filters.lobby_filter import LobbyFilter
 from .game_lobby import ManagedGameLobby, GameLobby
 from _project import settings, logger
@@ -12,11 +11,7 @@ class LobbyManager:
         self._id_index: int = 0
         self.managed_lobbies: dict[int, ManagedGameLobby] = {}
         if settings.health_check.enabled:
-            self.health_monitor = HealthMonitor(self,
-                                                settings.health_check.heartbeat_frequency_sec,
-                                                settings.health_check.heartbeat_grace_period_sec,
-                                                settings.health_check.periodic_check_frequency_sec if settings.health_check.periodic_check else None,
-                                                )
+            self.health_monitor = HealthMonitor(self)
 
     @property
     def id_index(self) -> int:
