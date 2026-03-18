@@ -1,11 +1,20 @@
 from typing import Optional
-
 from _lib.lobby_game_state import LobbyGameState
 from lobby_manager.game_lobby import ManagedGameLobby
 
 
 class LobbyFilter:
     def check(self, lobby: ManagedGameLobby) -> bool:
+        return True
+
+class LobbyFilterCollection:
+    def __init__(self, filters: list[LobbyFilter]) -> None:
+        self.filters: list[LobbyFilter] = filters
+
+    def check(self, lobby: ManagedGameLobby) -> bool:
+        for lobby_filter in self.filters:
+            if not lobby_filter.check(lobby):
+                return False
         return True
 
 class LobbyGameStateFilter(LobbyFilter):
