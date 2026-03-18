@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from game_lobby_crud import router as game_lobby_crud_router
+from game_lobby_router import router as game_lobby_crud_router
 
 app = FastAPI()
 
