@@ -11,8 +11,8 @@ class ConsoleLoggingSettings(BaseLoggingOutputSettings):
     pass
 
 class FileLoggingSettings(BaseLoggingOutputSettings):
-    file_path: str = Field(default="")
-    file_name: str = Field(default="_config/log.txt")
+    file_path: str = Field(default="_logs/")
+    file_name: str = Field(default="log.txt")
 
 class LoggingSettings(BaseModel):
     level: int = Field(default=0)
@@ -25,12 +25,14 @@ class SystemSettings(BaseModel):
 class LobbyManagerSettings(BaseModel):
     max_index: int = Field(default=10000)
     max_lobbies: int = Field(default=1000)
-    heartbeat_frequency: float = Field(default=15000)
 
 class HealthCheckSettings(BaseModel):
     enabled: bool = Field(default=True)
-    frequency_seconds: float = Field(default=15.0)
-    heartbeat_grace_period: float = Field(default=60.0)
+    heartbeat_frequency_sec: float = Field(default=15.0)
+    heartbeat_grace_period_sec: float = Field(default=3.0)
+    periodic_check: bool = Field(default=True)
+    on_request: bool = Field(default=False)
+    periodic_check_frequency_sec: float = Field(default=15.0)
 
 class Settings(BaseModel):
     system: SystemSettings = SystemSettings()

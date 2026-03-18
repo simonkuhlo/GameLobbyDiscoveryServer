@@ -1,4 +1,5 @@
 from os import PathLike
+from datetime import datetime
 from typing import Optional
 from _lib.simons_logging.log_level import LogLevel
 from _lib.simons_logging.log_message import LogMessage
@@ -13,7 +14,7 @@ class SimpleFileOutput(AbstractLoggingOutput):
         super().__init__(log_level_override=log_level_override)
 
     def _format_message(self, msg: LogMessage) -> str:
-        return f"{msg.timestamp} - [{msg.level.name}] {msg.message}"
+        return f"{datetime.fromtimestamp(msg.timestamp)} - [{msg.level.name}] {msg.message}"
 
     @property
     def _full_path(self):

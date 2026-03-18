@@ -8,15 +8,6 @@ from health_monitor import HealthMonitor
 from _project import settings
 
 lobby_manager = LobbyManager()
-if settings.health_check.enabled:
-    health_monitor = HealthMonitor(lobby_manager=lobby_manager,
-                                   interval=settings.health_check.frequency_seconds,
-                                   max_heartbeat_interval=settings.lobby_manager.heartbeat_frequency + settings.health_check.heartbeat_grace_period
-                                   )
-
-if settings.health_check.enabled:
-    health_monitor = HealthMonitor(lobby_manager)
-
 
 async def get_lobby(lobby_id: int) -> ManagedGameLobby:
     try:
@@ -45,7 +36,7 @@ async def create_lobby(lobby: GameLobbyCreate) -> RegisterResponse:
     read_model: GameLobbyRead = read_model_from_managed_instance(managed_instance)
     response: RegisterResponse = RegisterResponse(
         lobby_object = read_model,
-        heartbeat_freq = settings.lobby_manager.heartbeat_frequency
+        heartbeat_freq = settings.health_check.heartbeat_frequency_sec
     )
     return response
 

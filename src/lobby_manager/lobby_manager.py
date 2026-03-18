@@ -1,15 +1,22 @@
+from operator import truediv
 from typing import Optional
 
+from health_monitor import HealthMonitor
 from .filters.lobby_filter import LobbyFilter
 from .game_lobby import ManagedGameLobby, GameLobby
 from _project import settings, logger
-from models.game_lobby import PartialGameLobbyUpdate
 
 
 class LobbyManager:
     def __init__(self) -> None:
         self._id_index: int = 0
         self.managed_lobbies: dict[int, ManagedGameLobby] = {}
+        if settings.health_check.enabled:
+            self.health_monitor = HealthMonitor(self,
+                                                settings.health_check.heartbeat_frequency_sec,
+                                                settings.health_check.heartbeat_grace_period_sec,
+                                                settings.health_check.periodic_check_frequency_sec if settings.health_check.periodic_check else None,
+                                                )
 
     @property
     def id_index(self) -> int:
@@ -23,22 +30,37 @@ class LobbyManager:
             raise Exception(message)
         self._id_index = new_value
 
+    def _check_lobby_health_on_request(self, lobby: ManagedGameLobby) -> bool:
+        if not settings.health_check.enabled:
+            return True
+        if not settings.health_check.on_request:
+            return True
+        if self.health_monitor.check_lobby_health(lobby):
+            return True
+        return False
+
     def get_lobby(self, lobby_id: int) -> ManagedGameLobby:
         lobby = self.managed_lobbies.get(lobby_id)
+        if not self._check_lobby_health_on_request(lobby):
+            lobby = None
         if not lobby:
             message: str = "Tried to fetch a lobby with non existing ID."
             logger.log_error(message)
             raise Exception(message)
         return lobby
 
+    def get_all_lobbies(self) -> list[ManagedGameLobby]:
+        return list(self.managed_lobbies.values())
+
     def get_lobbies(self, lobby_filter: Optional[LobbyFilter] = None) -> list[ManagedGameLobby]:
         returned_lobbies = []
-        if lobby_filter:
-            for lobby in self.managed_lobbies.values():
+        for lobby in self.get_all_lobbies():
+            if lobby_filter:
                 if lobby_filter.check(lobby):
-                    returned_lobbies.append(lobby)
-        else:
-            return self.managed_lobbies.values()
+                    continue
+            if not self._check_lobby_health_on_request(lobby):
+                continue
+            returned_lobbies.append(lobby)
         return returned_lobbies
 
     def add_lobby(self, lobby: GameLobby) -> ManagedGameLobby:
